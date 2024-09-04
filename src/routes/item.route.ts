@@ -1,16 +1,17 @@
 import express from "express";
 import {
-  getItems,
+  // getItems,
   getItem,
   createItem,
   updateItem,
   deleteItem,
+  getAllItems,
 } from "../controllers/item.controller";
 import { validateItem } from "../middlewares/validateItem";
 
 const router = express.Router();
 
-router.get("/", getItems);
+router.get("/", getAllItems);
 router.get("/:id", getItem);
 
 router.post("/", validateItem, createItem);

@@ -1,14 +1,15 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import Item from "../models/item.model";
+import { ParsedQs } from "qs";
 
-export const getItems = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const items = await Item.find({});
-    res.status(200).json(items);
-  } catch (error) {
-    res.status(500).json({ message: (error as Error).message });
-  }
-};
+// export const getItems = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const items = await Item.find({});
+//     res.status(200).json(items);
+//   } catch (error) {
+//     res.status(500).json({ message: (error as Error).message });
+//   }
+// };
 
 export const getItem = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -20,6 +21,56 @@ export const getItem = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(item);
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });
+  }
+};
+
+export const getAllItems = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      page = "1",
+      limit = "5",
+      category,
+      sortBy,
+      sortOrder = "asc",
+    } = req.query as {
+      page?: string;
+      limit?: string;
+      category?: string;
+      sortBy?: string;
+      sortOrder?: string;
+    };
+
+    const query: any = {};
+    if (category) {
+      query.category = category;
+    }
+
+    const sort: any = {};
+    if (sortBy) {
+      sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+    }
+
+    const items = await Item.find(query)
+      .sort(sort)
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
+
+    const totalItems = await Item.countDocuments(query);
+
+    // Construct the response
+    const response = {
+      totalPages: Math.ceil(totalItems / Number(limit)),
+      currentPage: Number(page),
+      items,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
   }
 };
 

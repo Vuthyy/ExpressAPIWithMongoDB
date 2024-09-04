@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import itemRouter from "./routes/item.route";
+import { errorHandler } from "./middlewares/errorHandler";
+import { config } from "./config";
 
 const app = express();
 
@@ -12,7 +14,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`Request Time: ${new Date().toISOString()}`);
   next();
 });
- 
+
 // Routes
 app.use("/items", itemRouter);
 
@@ -21,17 +23,19 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello from Node API Server Updated");
 });
 
-// MongoDB connection URI
+// This is Global Error Handler
+app.use(errorHandler);
+
+// MongoDB Connection and Server Start
 mongoose
-  .connect(
-    "mongodb+srv://vuthydev:thydev1122@expressmongodb.qypcd.mongodb.net/ProductsItem?retryWrites=true&w=majority"
-  )
+  .connect(config.MONGODB_URI)
   .then(() => {
-    console.log("Connected to database!");
-    app.listen(4000, () => {
-      console.log("Server is running on port 4000");
+    console.log("Connected to the database!");
+    app.listen(config.PORT, () => {
+      console.log(`Server is running on port ${config.PORT}`);
     });
   })
-  .catch(() => {
-    console.log("Connection failed!");
+  .catch((err) => {
+    console.error("Connection failed!", err);
+    process.exit(1); // Exit the application on connection failure
   });
