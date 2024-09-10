@@ -7,16 +7,18 @@ import {
   deleteItem,
   getAllItems,
 } from "../controllers/item.controller";
-import { validateItem } from "../middlewares/validateItem";
+// import { validateItem } from "../middlewares/validateItem";
+import { itemSchema } from "../middlewares/validateItem";
+import { validateSchema } from "../middlewares/validateItem";
 
 const router = express.Router();
 
 router.get("/", getAllItems);
 router.get("/:id", getItem);
 
-router.post("/", validateItem, createItem);
+router.post("/", validateSchema(itemSchema), createItem);
 
-router.put("/:id", validateItem, updateItem);
+router.put("/:id", validateSchema(itemSchema), updateItem);
 
 router.patch("/:id", updateItem);
 

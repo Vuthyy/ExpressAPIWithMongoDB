@@ -1,11 +1,31 @@
 import { Request, Response, NextFunction } from "express";
+class GlobalError extends Error {
+  status: string;
+  statusCode: number;
+  isOperation: boolean;
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.status =
+      statusCode >= 400 && 500 < statusCode
+        ? "Client error"
+        : "Something went wrong";
+    this.statusCode = statusCode;
+    this.isOperation = true;
+  }
+}
+export default GlobalError;
 
-export const errorHandler = (
-  err: Error,
-  req: Request,
+// Define error-handle function
+const errorMiddleware = (
+  err: GlobalError,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
-  console.error(err.stack);
-  res.status(500).json({ message: err.message });
+  res.status(err.statusCode || 500).json({
+    status: err.status || "error",
+    message: err.message || "Internal server error",
+  });
 };
+
+export { GlobalError, errorMiddleware };

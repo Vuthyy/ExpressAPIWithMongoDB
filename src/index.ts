@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import itemRouter from "./routes/item.route";
-import { errorHandler } from "./middlewares/errorHandler";
+import { GlobalError, errorMiddleware } from "./middlewares/errorHandler";
 import { config } from "./config";
 
 const app = express();
@@ -24,7 +24,11 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // This is Global Error Handler
-app.use(errorHandler);
+app.all("*", (req: Request, _res: Response, next: NextFunction) => {
+  next(new GlobalError(`Invalid ${req.originalUrl} api url`, 404));
+});
+
+app.use(errorMiddleware);
 
 // MongoDB Connection and Server Start
 mongoose

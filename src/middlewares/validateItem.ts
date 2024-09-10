@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as yup from "yup";
 
-const itemSchema = yup.object().shape({
+export const itemSchema = yup.object().shape({
   name: yup
     .string()
     .required("Please enter item name")
@@ -17,18 +17,33 @@ const itemSchema = yup.object().shape({
     .min(0, "Stock cannot be negative"),
 });
 
-export const validateItem = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    await itemSchema.validate(req.body, { abortEarly: false });
-    next();
-  } catch (error: any) {
-    res.status(400).json({
-      message: "Validation failed",
-      errors: error.errors,
-    });
-  }
+// export const validateItem = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     await itemSchema.validate(req.body, { abortEarly: false });
+//     next();
+//   } catch (error: any) {
+//     res.status(400).json({
+//       message: "Validation failed",
+//       errors: error.errors,
+//     });
+//   }
+// };
+
+// Generic validation middleware
+export const validateSchema = (schema: yup.ObjectSchema<any>) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.validate(req.body, { abortEarly: false });
+      next();
+    } catch (error: any) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: error.errors,
+      });
+    }
+  };
 };
